@@ -33,7 +33,7 @@ var writePit = function(writer, pit, callback) {
   writer.writeObjects(data, function(err) {
     callback(err);
   });
-}
+};
 
 function download(config, dir, writer, callback) {
   H(Object.keys(latLons))
@@ -72,13 +72,13 @@ function convert(config, dir, writer, callback) {
             nyplUrl: 'http://digitalcollections.nypl.org/items/image_id/' + imageId
           },
           geometry: geometry
-        }
+        };
 
         if (obj.original_title) {
           pit.name = obj.original_title;
         }
 
-        var matches = obj.date.match(/(\b\d{4}\b)/g)
+        var matches = obj.date.match(/(\b\d{4}\b)/g);
         if (matches) {
           var years = matches.map(function(m) {
               return parseInt(m);
