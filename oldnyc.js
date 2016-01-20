@@ -4,11 +4,13 @@ var request = require('request');
 var H = require('highland');
 var JSONStream = require('JSONStream');
 
-var latLons = require('./lat-lons.json');
+var baseUrl = 'https://www.oldnyc.org/';
+var counts = 'lat-lon-counts.js';
 
 var downloadLatlonFile = function(latLon, callback) {
-  var url = 'https://www.oldnyc.org/by-location/' + latLon.replace(',', '') + '.json';
+  var url = baseUrl + 'by-location/' + latLon.replace(',', '') + '.json';
   console.log('\tdownloading ' + latLon);
+
   request(url, {json: true}, function (err, response, json) {
     if (err) {
       callback(err);
@@ -36,15 +38,30 @@ var writePit = function(writer, pit, callback) {
 };
 
 function download(config, dir, writer, callback) {
-  H(Object.keys(latLons))
-    .map(H.curry(downloadLatlonFile))
-    .nfcall([])
-    .series()
-    .pipe(JSONStream.stringify())
-    .on('end', function() {
-      callback();
+  H(request(baseUrl + counts))
+    .splitBy(':')
+    .map(function(line) {
+      return line.match(/(-?\d+\.\d*)/g);
     })
-    .pipe(fs.createWriteStream(path.join(dir, 'data.json')));
+    .compact()
+    .toArray(function(latLons) {
+      H(latLons)
+        .map(function(latLon) {
+          return latLon.join(',');
+        })
+        .map(H.curry(downloadLatlonFile))
+        .nfcall([])
+        .series()
+        .errors(function(err) {
+          console.error(err);
+        })
+        .pipe(JSONStream.stringify())
+        .on('end', function() {
+          console.log('DNEDNNN')
+          callback();
+        })
+        .pipe(fs.createWriteStream(path.join(dir, 'data.json')));
+    });
 }
 
 function convert(config, dir, writer, callback) {
@@ -78,17 +95,19 @@ function convert(config, dir, writer, callback) {
           pit.name = obj.original_title;
         }
 
-        var matches = obj.date.match(/(\b\d{4}\b)/g);
-        if (matches) {
-          var years = matches.map(function(m) {
-              return parseInt(m);
-            }).sort();
+        if (obj.date) {
+          var matches = obj.date.match(/(\b\d{4}\b)/g);
+          if (matches) {
+            var years = matches.map(function(m) {
+                return parseInt(m);
+              }).sort();
 
-          var minYear = years[0];
-          var maxYear = years[years.length - 1];
+            var minYear = years[0];
+            var maxYear = years[years.length - 1];
 
-          pit.validSince = minYear;
-          pit.validUntil = maxYear;
+            pit.validSince = minYear;
+            pit.validUntil = maxYear;
+          }
         }
 
         return pit;
