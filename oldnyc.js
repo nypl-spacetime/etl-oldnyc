@@ -57,7 +57,6 @@ function download(config, dir, writer, callback) {
         })
         .pipe(JSONStream.stringify())
         .on('end', function() {
-          console.log('DNEDNNN')
           callback();
         })
         .pipe(fs.createWriteStream(path.join(dir, 'data.json')));
@@ -126,9 +125,6 @@ function convert(config, dir, writer, callback) {
 }
 
 // ==================================== API ====================================
-
-module.exports.title = 'OldNYC';
-module.exports.url = 'https://www.oldnyc.org/';
 
 module.exports.steps = [
   download,
