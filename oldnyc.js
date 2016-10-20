@@ -1,97 +1,61 @@
-var fs = require('fs')
-var path = require('path')
-var request = require('request')
-var H = require('highland')
-var JSONStream = require('JSONStream')
+const fs = require('fs')
+const path = require('path')
+const request = require('request')
+const H = require('highland')
+const JSONStream = require('JSONStream')
 
-var baseUrl = 'https://www.oldnyc.org/'
-var counts = 'lat-lon-counts.js'
-
-var downloadLatlonFile = function (latLon, callback) {
-  var url = baseUrl + 'by-location/' + latLon.replace(',', '') + '.json'
-  console.log('\tdownloading ' + latLon)
-
-  request(url, {json: true}, function (err, response, json) {
-    if (err) {
-      callback(err)
-      return
-    }
-
-    callback(null, {
-      coordinates: latLon.split(',').reverse().map((c) => parseFloat(c)),
-      data: json
-    })
-  })
-}
+const dataUrl = 'https://raw.githubusercontent.com/oldnyc/oldnyc.github.io/master/data.json'
 
 function download (config, dirs, tools, callback) {
-  H(request(baseUrl + counts))
-    .splitBy(':')
-    .map(function (line) {
-      return line.match(/(-?\d+\.\d*)/g)
-    })
-    .compact()
-    .toArray((latLons) => {
-      H(latLons)
-        .map((latLon) => latLon.join(','))
-        .map(H.curry(downloadLatlonFile))
-        .nfcall([])
-        .series()
-        .errors(callback)
-        .pipe(JSONStream.stringify())
-        .on('end', callback)
-        .pipe(fs.createWriteStream(path.join(dirs.current, 'data.json')))
-    })
+  var stream = request(dataUrl)
+  stream.pipe(fs.createWriteStream(path.join(dirs.current, 'maps.json')))
+  stream.on('end', callback)
 }
 
 function transform (config, dirs, tools, callback) {
-  var stream = fs.createReadStream(path.join(dirs.previous, 'data.json'))
-    .pipe(JSONStream.parse('*'))
+  var stream = fs.createReadStream(path.join(dirs.previous, 'maps.json'))
+    .pipe(JSONStream.parse('photos.*'))
 
   H(stream)
-    .map(function (d) {
-      var geometry = {
+    .map((photo) => {
+      const geometry = {
         type: 'Point',
-        coordinates: d.coordinates
+        coordinates: [
+          photo.location.lat,
+          photo.location.lon
+        ]
       }
 
-      return Object.keys(d.data).map(function (key) {
-        var obj = d.data[key]
+      const imageId = photo.photo_id.split('-')[0]
 
-        var imageId = key.split('-')[0]
+      var pit = {
+        id: photo.photo_id,
+        type: 'st:Photo',
+        name: photo.title || photo.original_title,
+        data: {
+          text: photo.text,
+          folder: photo.folder,
+          imageUrl: photo.image_url,
+          nyplUrl: 'http://digitalcollections.nypl.org/items/image_id/' + imageId
+        },
+        geometry: geometry
+      }
 
-        var pit = {
-          id: key,
-          type: 'st:Photo',
-          data: {
-            text: obj.text,
-            imageUrl: obj.image_url,
-            nyplUrl: 'http://digitalcollections.nypl.org/items/image_id/' + imageId
-          },
-          geometry: geometry
+      if (photo.date) {
+        var matches = photo.date.match(/(\b\d{4}\b)/g)
+        if (matches) {
+          var years = matches.map((m) => parseInt(m))
+            .sort()
+
+          var minYear = years[0]
+          var maxYear = years[years.length - 1]
+
+          pit.validSince = minYear
+          pit.validUntil = maxYear
         }
+      }
 
-        if (obj.original_title) {
-          pit.name = obj.original_title
-        }
-
-        if (obj.date) {
-          var matches = obj.date.match(/(\b\d{4}\b)/g)
-          if (matches) {
-            var years = matches.map(function (m) {
-              return parseInt(m)
-            }).sort()
-
-            var minYear = years[0]
-            var maxYear = years[years.length - 1]
-
-            pit.validSince = minYear
-            pit.validUntil = maxYear
-          }
-        }
-
-        return pit
-      })
+      return pit
     })
     .flatten()
     .map((pit) => ({
