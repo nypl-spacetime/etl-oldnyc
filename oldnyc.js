@@ -28,7 +28,7 @@ function transform (config, dirs, tools, callback) {
 
       const imageId = photo.photo_id.split('-')[0]
 
-      var pit = {
+      var object = {
         id: photo.photo_id,
         type: 'st:Photo',
         name: photo.title || photo.original_title,
@@ -50,17 +50,17 @@ function transform (config, dirs, tools, callback) {
           var minYear = years[0]
           var maxYear = years[years.length - 1]
 
-          pit.validSince = minYear
-          pit.validUntil = maxYear
+          object.validSince = minYear
+          object.validUntil = maxYear
         }
       }
 
-      return pit
+      return object
     })
     .flatten()
-    .map((pit) => ({
-      type: 'pit',
-      obj: pit
+    .map((object) => ({
+      type: 'object',
+      obj: object
     }))
     .map(H.curry(tools.writer.writeObject))
     .nfcall([])
