@@ -1,12 +1,12 @@
 {
   "id": "oldnyc",
   "title": "OldNYC",
-  "license": "Apache 2.0",
+  "license": "CC BY-NC",
   "description": "OldNYC provides an alternative way of browsing the NYPL's incredible Photographic Views of New York City, 1870s-1970s collection. Its goal is to help you discover the history behind the places you see every day.",
   "author": "Dan Vanderkam",
   "website": "https://www.oldnyc.org/",
   "editor": "Bert Spaan",
-  "@context": {
+  "jsonldContext": {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "dcterms": "http://purl.org/dc/terms/",
     "dc": "http://purl.org/dc/elements/1.1/",
