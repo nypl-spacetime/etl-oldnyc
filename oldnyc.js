@@ -51,7 +51,7 @@ function findUuid (photo, callback) {
 
     console.log(`      Getting UUID for Image ID ${imageId}`)
 
-    digitalCollections.uuidForLocalIdentifier (options, (err, uuid) => {
+    digitalCollections.uuidForLocalIdentifier(options, (err, uuid) => {
       if (err) {
         callback(err)
         return
@@ -61,7 +61,7 @@ function findUuid (photo, callback) {
       saveCacheFile()
 
       if (!uuid) {
-        console.log(`        Error, UUID not found...`)
+        console.log('        Error, UUID not found...')
         callback(null, photo)
       } else {
         console.log(`        Found: ${uuid}`)
