@@ -1,7 +1,7 @@
 {
-  "name": "spacetime-data-geonames",
-  "version": "0.1.0",
-  "description": "Space/Time ETL module for OldNYC",
+  "name": "spacetime-etl-oldnyc",
+  "version": "0.2.0",
+  "description": "NYC Space/Time Directory ETL module for OldNYC",
   "main": "oldnyc.js",
   "devDependencies": {
     "spacetime-generate-etl-readme": "^0.1.5",
@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "JSONStream": "^1.0.7",
-    "digital-collections": "^0.1.1",
+    "digital-collections": "^0.1.3",
     "highland": "^2.6.0",
     "request": "^2.67.0"
   }

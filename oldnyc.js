@@ -84,17 +84,18 @@ function download (config, dirs, tools, callback) {
     .map(H.curry(findUuid))
     .nfcall([])
     .series()
-    .errors(callback)
-    .pipe(JSONStream.stringify())
-    .pipe(fs.createWriteStream(path.join(dirs.current, 'data.json')))
+    .stopOnError(callback)
+    .map(JSON.stringify)
+    .intersperse('\n')
+    .pipe(fs.createWriteStream(path.join(dirs.current, 'data.ndjson')))
     .on('finish', callback)
 }
 
 function transform (config, dirs, tools, callback) {
-  var stream = fs.createReadStream(path.join(dirs.previous, 'data.json'))
-    .pipe(JSONStream.parse('*'))
-
-  H(stream)
+  H(fs.createReadStream(path.join(dirs.previous, 'data.ndjson')))
+    .split()
+    .compact()
+    .map(JSON.parse)
     .map((photo) => {
       const geometry = {
         type: 'Point',
