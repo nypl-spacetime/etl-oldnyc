@@ -9,22 +9,20 @@ const dataUrl = 'https://raw.githubusercontent.com/oldnyc/oldnyc.github.io/maste
 
 const requestsPerSecond = 10
 const cacheFilename = 'imageIdsToUuids.json'
-var cacheFileDir
-var imageIdsToUuids = {}
 
-function loadCacheFile (dir) {
-  cacheFileDir = dir
+// Global cache
+let imageIdsToUuids = {}
+
+function loadCacheFile (cachePath) {
   try {
-    imageIdsToUuids = require(path.join(dir, cacheFilename))
+    imageIdsToUuids = require(cachePath)
   } catch (err) {
-    console.log(`      ${cacheFilename} not found — creating new cache file! 🙅\n`)
+    console.log(`      ${cachePath} not found — creating new cache file! 🙅\n`)
   }
 }
 
-function saveCacheFile () {
-  if (cacheFileDir) {
-    fs.writeFileSync(path.join(cacheFileDir, cacheFilename), JSON.stringify(imageIdsToUuids, null, 2))
-  }
+function saveCacheFile (cachePath) {
+  fs.writeFileSync(cachePath, JSON.stringify(imageIdsToUuids, null, 2))
 }
 
 function findImageId (photo) {
@@ -39,7 +37,7 @@ function addUuid (photo, uuid, callback) {
   }))
 }
 
-function findUuid (photo, callback) {
+function findUuid (cachePath, photo, callback) {
   const imageId = photo.imageId
   if (imageIdsToUuids[imageId] !== undefined) {
     addUuid(photo, imageIdsToUuids[imageId], callback)
@@ -58,7 +56,7 @@ function findUuid (photo, callback) {
       }
 
       imageIdsToUuids[imageId] = uuid || null
-      saveCacheFile()
+      saveCacheFile(cachePath)
 
       if (!uuid) {
         console.log('        Error, UUID not found...')
@@ -73,15 +71,16 @@ function findUuid (photo, callback) {
   }
 }
 
-function download (config, dirs, tools, callback) {
-  loadCacheFile(dirs.current)
+function cachedDownload (config, dirs, tools, callback) {
+  const cachePath = path.join(dirs.current, cacheFilename)
+  loadCacheFile(cachePath)
 
-  var stream = request(dataUrl)
+  const stream = request(dataUrl)
     .pipe(JSONStream.parse('photos.*'))
 
   H(stream)
     .map(findImageId)
-    .map(H.curry(findUuid))
+    .map(H.curry(findUuid, cachePath))
     .nfcall([])
     .series()
     .stopOnError(callback)
@@ -89,6 +88,21 @@ function download (config, dirs, tools, callback) {
     .intersperse('\n')
     .pipe(fs.createWriteStream(path.join(dirs.current, 'data.ndjson')))
     .on('finish', callback)
+}
+
+function download (config, dirs, tools, callback) {
+  const cachePath = path.join(dirs.current, cacheFilename)
+
+  if (!fs.existsSync(cachePath)) {
+    fs.createReadStream(path.join(__dirname, 'data', cacheFilename))
+      .pipe(fs.createWriteStream(cachePath))
+      .on('error', callback)
+      .on('finish', () => {
+        cachedDownload(config, dirs, tools, callback)
+      })
+  } else {
+    cachedDownload(config, dirs, tools, callback)
+  }
 }
 
 function transform (config, dirs, tools, callback) {
