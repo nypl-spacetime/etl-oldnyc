@@ -128,11 +128,11 @@ function transform (config, dirs, tools, callback) {
         data: {
           uuid: photo.uuid,
           imageId: photo.imageId,
-          text: photo.text,
+          text: photo.text || undefined,
           folder: photo.folder,
           url: `https://www.oldnyc.org/#${photo.photo_id}`,
           imageUrl: photo.image_url,
-          nyplUrl: 'http://digitalcollections.nypl.org/items/image_id/' + imageId
+          nyplUrl: 'http://digitalcollections.nypl.org/items/' + photo.uuid
         },
         geometry: geometry
       }

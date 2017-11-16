@@ -3,24 +3,58 @@
   "title": "OldNYC",
   "license": "CC BY-NC",
   "description": "OldNYC provides an alternative way of browsing the NYPL's incredible Photographic Views of New York City, 1870s-1970s collection. Its goal is to help you discover the history behind the places you see every day.",
-  "author": "Dan Vanderkam",
-  "website": "https://www.oldnyc.org/",
-  "editor": "Bert Spaan",
-  "jsonldContext": {
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "dcterms": "http://purl.org/dc/terms/",
-    "dc": "http://purl.org/dc/elements/1.1/",
-    "text": {
-      "@id": "dc:description",
-      "@type": "xsd:string"
-    },
-    "imageUrl": {
-      "@id": "dcterms:identifier",
-      "@type": "xsd:string"
-    },
-    "nyplUrl": {
-      "@id": "dcterms:identifier",
-      "@type": "xsd:string"
+  "homepage": "https://www.oldnyc.org/",
+  "sources": [{
+    "title": "OldNYC's data file",
+    "path": "https://raw.githubusercontent.com/oldnyc/oldnyc.github.io/master/data.json"
+  }],
+  "contributors": [{
+    "title": "Bert Spaan",
+    "role": "editor"
+  }, {
+    "title": "Dan Vanderkam",
+    "role": "author"
+  }],
+  "fields": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "uuid",
+      "imageId",
+      "url",
+      "imageUrl",
+      "nyplUrl"
+    ],
+    "properties": {
+      "uuid": {
+        "type": "string",
+        "description": "NYPL UUID of item"
+      },
+      "imageId": {
+        "type": "string",
+        "description": "NYPL Image ID"
+      },
+      "text": {
+        "type": "string",
+        "description": "Text from back of photo, extracted using OCR"
+      },
+      "folder": {
+        "type": "string",
+        "description": "Normalized title, used on OldNYC website"
+      },
+      "url": {
+        "type": "string",
+        "description": "URL of webpage of photo in OldNYC"
+      },
+      "imageUrl": {
+        "type": "string",
+        "description": "URL of image of photo in OldNYC"
+      },
+      "nyplUrl": {
+        "type": "string",
+        "description": "URL to item in NYPL Digital Collections"
+      }
     }
   }
 }
