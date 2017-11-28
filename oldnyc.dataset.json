@@ -4,18 +4,23 @@
   "license": "CC BY-NC",
   "description": "OldNYC provides an alternative way of browsing the NYPL's incredible Photographic Views of New York City, 1870s-1970s collection. Its goal is to help you discover the history behind the places you see every day.",
   "homepage": "https://www.oldnyc.org/",
-  "sources": [{
-    "title": "OldNYC's data file",
-    "path": "https://raw.githubusercontent.com/oldnyc/oldnyc.github.io/master/data.json"
-  }],
-  "contributors": [{
-    "title": "Bert Spaan",
-    "role": "editor"
-  }, {
-    "title": "Dan Vanderkam",
-    "role": "author"
-  }],
-  "fields": {
+  "sources": [
+    {
+      "title": "OldNYC's data file",
+      "path": "https://raw.githubusercontent.com/oldnyc/oldnyc.github.io/master/data.json"
+    }
+  ],
+  "contributors": [
+    {
+      "title": "Bert Spaan",
+      "role": "wrangler"
+    },
+    {
+      "title": "Dan Vanderkam",
+      "role": "author"
+    }
+  ],
+  "schema": {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
     "additionalProperties": false,
