@@ -20,6 +20,15 @@
       "role": "author"
     }
   ],
+  "flattenPaths": [
+    "$.data.uuid",
+    "$.data.imageId",
+    "$.data.text",
+    "$.data.folder",
+    "$.data.url",
+    "$.data.imageUrl",
+    "$.data.nyplUrl"
+  ],
   "schema": {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
